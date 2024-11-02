@@ -3,26 +3,30 @@
 import { BellIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useAuth, UserButton } from '@clerk/nextjs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Mock data - replace with real data from your API
+// Keep connection status for now
 const connectionStatus = {
   isConnected: true,
   lastConnected: "2024-03-21T15:30:00Z"
 };
 
-const jobChanges = [
-  {
-    id: 1,
-    name: "Sarah Chen",
-    imageUrl: "https://placekitten.com/100/100",
-    previousRole: "Senior Product Manager at Google",
-    newRole: "Director of Product at Stripe",
-    aiAnalysis: "Sarah's move appears motivated by career growth, moving from a senior IC role to a leadership position. The fintech industry's recent growth likely played a role in this transition."
-  },
-  // Add more mock data as needed
-];
+interface AnonConnection {
+  id: string;
+  name: string;
+  headline?: string;
+  publicProfileUrl?: string;
+  publicIdentifier?: string;
+  profilePictureUrl?: string;
+  createdAt: string;
+}
+
+interface ConnectionsResponse {
+  connections: AnonConnection[];
+  cursor?: string;
+  error?: string;
+}
 
 interface AnonResponse {
   url: string;
@@ -31,6 +35,9 @@ interface AnonResponse {
 export default function DashboardPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const [connections, setConnections] = useState<AnonConnection[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Protect the dashboard route
   useEffect(() => {
@@ -71,6 +78,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUpdateRecords = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/connections', {
+        method: 'GET',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json() as ConnectionsResponse;
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setConnections(data.connections);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage);
+      console.error('Failed to fetch connections:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header - Now with Clerk UserButton */}
@@ -106,44 +142,72 @@ export default function DashboardPage() {
                 Last synced: {new Date(connectionStatus.lastConnected).toLocaleString()}
               </p>
             </div>
-            <button 
-              onClick={handleRefreshConnection}
-              className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800"
-            >
-              {connectionStatus.isConnected ? 'Refresh Connection' : 'Connect LinkedIn'}
-            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={handleRefreshConnection}
+                className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800"
+              >
+                {connectionStatus.isConnected ? 'Refresh Connection' : 'Connect LinkedIn'}
+              </button>
+              <button 
+                onClick={handleUpdateRecords}
+                className="px-8 py-4 bg-gray-200 text-gray-900 rounded-full hover:bg-gray-300"
+              >
+                Update Records
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Recent Job Changes */}
+        {/* Recent Connections */}
         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Recent Network Changes</h2>
-          <div className="space-y-8">
-            {jobChanges.map((person) => (
-              <div key={person.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
-                <div className="flex items-start gap-6">
-                  <Image
-                    src={person.imageUrl}
-                    alt={person.name}
-                    width={72}
-                    height={72}
-                    className="rounded-full"
-                  />
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">{person.name}</h3>
-                    <div className="mt-2 space-y-1">
-                      <p className="text-gray-500 line-through">{person.previousRole}</p>
-                      <p className="text-gray-900 font-medium">{person.newRole}</p>
-                    </div>
-                    <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-                      <h4 className="text-sm font-bold text-gray-900 mb-2">AI Analysis</h4>
-                      <p className="text-gray-600">{person.aiAnalysis}</p>
+          
+          {error && (
+            <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-xl">
+              {error}
+            </div>
+          )}
+          
+          {isLoading ? (
+            <div className="text-center py-8">Loading connections...</div>
+          ) : connections.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No connections found. Click "Update Records" to fetch your connections.
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {connections.map((connection) => (
+                <div key={connection.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
+                  <div className="flex items-start gap-6">
+                    <Image
+                      src={connection.profilePictureUrl || 'https://placekitten.com/100/100'} // Fallback image
+                      alt={connection.name}
+                      width={72}
+                      height={72}
+                      className="rounded-full"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900">{connection.name}</h3>
+                      {connection.headline && (
+                        <p className="text-gray-600 mt-1">{connection.headline}</p>
+                      )}
+                      {connection.publicProfileUrl && (
+                        <a 
+                          href={connection.publicProfileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block"
+                        >
+                          View LinkedIn Profile
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
