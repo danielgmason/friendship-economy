@@ -1,102 +1,151 @@
 'use client';
 
-import { 
-  ChatBubbleLeftIcon, 
-  UserGroupIcon, 
-  CalendarIcon,
-  BellIcon 
-} from '@heroicons/react/24/outline';
+import { UserCircleIcon, BellIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useAuth, UserButton } from '@clerk/nextjs';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AppPage() {
+// Mock data - replace with real data from your API
+const connectionStatus = {
+  isConnected: true,
+  lastConnected: "2024-03-21T15:30:00Z"
+};
+
+const jobChanges = [
+  {
+    id: 1,
+    name: "Sarah Chen",
+    imageUrl: "https://placekitten.com/100/100",
+    previousRole: "Senior Product Manager at Google",
+    newRole: "Director of Product at Stripe",
+    aiAnalysis: "Sarah's move appears motivated by career growth, moving from a senior IC role to a leadership position. The fintech industry's recent growth likely played a role in this transition."
+  },
+  // Add more mock data as needed
+];
+
+interface AnonResponse {
+  url: string;
+}
+
+export default function DashboardPage() {
+  const { userId, isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  // Protect the dashboard route
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  // Show loading state while checking auth
+  if (!isLoaded || !isSignedIn) {
+    return <div>Loading...</div>;
+  }
+
+  const handleRefreshConnection = async () => {
+    try {
+      if (typeof window === 'undefined') {
+        throw new Error('This function must be run in a browser environment');
+      }
+
+      const response = await fetch('/api/anon');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json() as AnonResponse;
+      
+      if (!data.url) {
+        throw new Error('No URL returned from Anon API');
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Failed to generate Anon link:', error);
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm fixed w-full z-10">
-        <div className="mx-auto px-4">
-          <div className="flex h-16 justify-between items-center">
-            <h1 className="text-xl font-semibold text-blue-600">FriendshipApp</h1>
-            <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
+    <div className="min-h-screen bg-white">
+      {/* Header - Now with Clerk UserButton */}
+      <header className="bg-white/80 backdrop-blur-sm fixed w-full z-10">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex h-20 justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">Friendship Economy</h1>
+            <div className="flex items-center gap-6">
+              <button className="text-gray-600 hover:text-gray-900">
                 <BellIcon className="h-6 w-6" />
               </button>
-              <Image 
-                src="https://placekitten.com/32/32"
-                alt="Profile"
-                className="h-8 w-8 rounded-full"
-                width={32}
-                height={32}
-              />
+              {/* Replace the user circle with Clerk's UserButton */}
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex pt-16">
-        {/* Left Sidebar - Navigation */}
-        <aside className="w-64 bg-white shadow-sm fixed h-full">
-          <nav className="p-4 space-y-2">
-            <a href="#" className="flex items-center gap-2 p-2 text-gray-700 hover:bg-gray-50 rounded-md">
-              <ChatBubbleLeftIcon className="h-5 w-5" />
-              <span>Chat</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 p-2 text-gray-700 hover:bg-gray-50 rounded-md">
-              <UserGroupIcon className="h-5 w-5" />
-              <span>Groups</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 p-2 text-gray-700 hover:bg-gray-50 rounded-md">
-              <CalendarIcon className="h-5 w-5" />
-              <span>Events</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 p-2 text-gray-700 hover:bg-gray-50 rounded-md">
-              <BellIcon className="h-5 w-5" />
-              <span>Notifications</span>
-            </a>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
-              <p className="text-3xl font-semibold text-gray-900">1,234</p>
-              <p className="text-green-600 text-sm mt-2">↑ 12% from last month</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-gray-500 text-sm font-medium">Revenue</h3>
-              <p className="text-3xl font-semibold text-gray-900">$12,345</p>
-              <p className="text-green-600 text-sm mt-2">↑ 8% from last month</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-gray-500 text-sm font-medium">Active Projects</h3>
-              <p className="text-3xl font-semibold text-gray-900">23</p>
-              <p className="text-red-600 text-sm mt-2">↓ 2% from last month</p>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">New user signed up</p>
-                      <p className="text-sm text-gray-500">2 hours ago</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
-                      Completed
-                    </span>
-                  </div>
-                ))}
+      {/* Main Content - Matching homepage spacing */}
+      <main className="max-w-7xl mx-auto px-8 pt-32">
+        {/* LinkedIn Connection Status */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-8 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">LinkedIn Connection</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`h-3 w-3 rounded-full ${connectionStatus.isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-lg text-gray-900">
+                  {connectionStatus.isConnected ? 'Connected' : 'Disconnected'}
+                </span>
               </div>
+              <p className="text-gray-600">
+                Last synced: {new Date(connectionStatus.lastConnected).toLocaleString()}
+              </p>
             </div>
+            <button 
+              onClick={handleRefreshConnection}
+              className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800"
+            >
+              {connectionStatus.isConnected ? 'Refresh Connection' : 'Connect LinkedIn'}
+            </button>
           </div>
-        </main>
-      </div>
+        </div>
+
+        {/* Recent Job Changes */}
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Recent Network Changes</h2>
+          <div className="space-y-8">
+            {jobChanges.map((person) => (
+              <div key={person.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
+                <div className="flex items-start gap-6">
+                  <Image
+                    src={person.imageUrl}
+                    alt={person.name}
+                    width={72}
+                    height={72}
+                    className="rounded-full"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900">{person.name}</h3>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-gray-500 line-through">{person.previousRole}</p>
+                      <p className="text-gray-900 font-medium">{person.newRole}</p>
+                    </div>
+                    <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+                      <h4 className="text-sm font-bold text-gray-900 mb-2">AI Analysis</h4>
+                      <p className="text-gray-600">{person.aiAnalysis}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
