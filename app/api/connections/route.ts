@@ -32,6 +32,11 @@ export async function GET(): Promise<NextResponse> {
       }
     };
 
+    console.log('Anon API Key:', ANON_API_KEY);
+    console.log('Anon App User ID:', ANON_APP_USER_ID);
+
+    console.log('Fetching connections...');
+
     const response = await fetch(
       `https://svc.sandbox.anon.com/actions/linkedin/listConnections?appUserId=${ANON_APP_USER_ID}`,
       options
@@ -42,10 +47,24 @@ export async function GET(): Promise<NextResponse> {
     }
 
     const data = (await response.json()) as AnonResponse;
+
+    console.log('Anon Response:', data);
     
     // Store connections in database
-    const upsertPromises = data.connections.map(connection => 
-      prisma.connection.upsert({
+    const upsertPromises = data.connections.map(async (connection: AnonConnection) => {
+      // First get the existing connection if it exists
+      const existingConnection = await prisma.connection.findUnique({
+        where: {
+          userId_linkedInId: {
+            userId: 'test-user',
+            linkedInId: connection.id
+          }
+        }
+      });
+
+      console.log('Existing connection:', connection);
+    
+      return await prisma.connection.upsert({
         where: {
           userId_linkedInId: {
             userId: 'test-user',
@@ -59,6 +78,17 @@ export async function GET(): Promise<NextResponse> {
           publicIdentifier: connection.publicIdentifier,
           profilePictureUrl: connection.profilePictureUrl,
           connectionCreatedAt: new Date(connection.createdAt),
+          // Store old values if they've changed
+          oldHeadline: existingConnection 
+            ? (existingConnection.headline !== connection.headline 
+              ? connection.headline 
+              : existingConnection.headline)
+            : connection.headline,
+          oldHeadlineUpdatedAt: existingConnection
+            ? (existingConnection.headline !== connection.headline
+              ? (connection.createdAt ? new Date(connection.createdAt) : undefined)
+              : existingConnection.oldHeadlineUpdatedAt)
+            : (connection.createdAt ? new Date(connection.createdAt) : undefined),
         },
         create: {
           userId: 'test-user',
@@ -69,13 +99,21 @@ export async function GET(): Promise<NextResponse> {
           publicIdentifier: connection.publicIdentifier,
           profilePictureUrl: connection.profilePictureUrl,
           connectionCreatedAt: new Date(connection.createdAt),
+          oldHeadline: connection.headline,
+          oldHeadlineUpdatedAt: new Date(connection.createdAt),
         },
-      })
-    );
+      });
+    });
 
-    await Promise.all(upsertPromises);
+    const upsertedConnections = await Promise.all(upsertPromises);
 
-    return NextResponse.json(data);
+    const newConnections = upsertedConnections.map(connection => ({
+      ...connection,
+      oldTimestamp: connection.oldHeadlineUpdatedAt,
+    }));
+    console.log('Upserted connections:', newConnections);
+
+    return NextResponse.json({...data, connections: newConnections});
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Error fetching connections:', error.message);

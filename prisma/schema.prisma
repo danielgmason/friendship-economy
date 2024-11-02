@@ -11,16 +11,18 @@ datasource db {
 }
 
 model Connection {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String   // Clerk user ID
-  linkedInId        String   // LinkedIn's "id" field
-  name              String
-  headline          String?
-  publicProfileUrl  String?
-  publicIdentifier  String?
-  profilePictureUrl String?
-  connectionCreatedAt DateTime
-  updatedAt         DateTime @updatedAt
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String // Clerk user ID
+  linkedInId           String // LinkedIn's "id" field
+  name                 String
+  headline             String?
+  oldHeadline          String?
+  oldHeadlineUpdatedAt DateTime?
+  publicProfileUrl     String?
+  publicIdentifier     String?
+  profilePictureUrl    String?
+  connectionCreatedAt  DateTime
+  updatedAt            DateTime  @updatedAt
 
   @@unique([userId, linkedInId])
   @@index([userId])
