@@ -1,6 +1,6 @@
 'use client';
 
-import { UserCircleIcon, BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import { useEffect } from 'react';
@@ -29,7 +29,7 @@ interface AnonResponse {
 }
 
 export default function DashboardPage() {
-  const { userId, isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
   // Protect the dashboard route
