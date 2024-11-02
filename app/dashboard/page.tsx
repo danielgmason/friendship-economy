@@ -6,6 +6,7 @@ import {
   CalendarIcon,
   BellIcon 
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 export default function AppPage() {
   return (
@@ -19,10 +20,12 @@ export default function AppPage() {
               <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
                 <BellIcon className="h-6 w-6" />
               </button>
-              <img
+              <Image 
                 src="https://placekitten.com/32/32"
                 alt="Profile"
                 className="h-8 w-8 rounded-full"
+                width={32}
+                height={32}
               />
             </div>
           </div>

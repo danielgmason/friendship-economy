@@ -1,12 +1,6 @@
 'use client';
 
-import { JSX } from 'react';
-import { 
-  UserGroupIcon, 
-  ChartBarIcon,
-  BriefcaseIcon,
-  SparklesIcon 
-} from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 export default function LandingPage() {
   return (
