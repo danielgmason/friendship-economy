@@ -173,7 +173,7 @@ export default function DashboardPage() {
             <div className="text-center py-8">Loading connections...</div>
           ) : connections.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No connections found. Click "Update Records" to fetch your connections.
+              No connections found. Click &quot;Update Records&quot; to fetch your connections.
             </div>
           ) : (
             <div className="space-y-8">
