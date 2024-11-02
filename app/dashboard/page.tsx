@@ -16,6 +16,10 @@ interface AnonConnection {
   id: string;
   name: string;
   headline?: string;
+  oldHeadline?: string;
+  newHeadline?: string;
+  status: 'updated' | 'no_change';
+  aiAnalysis?: string;
   publicProfileUrl?: string;
   publicIdentifier?: string;
   profilePictureUrl?: string;
@@ -181,23 +185,51 @@ export default function DashboardPage() {
                 <div key={connection.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
                   <div className="flex items-start gap-6">
                     <Image
-                      src={connection.profilePictureUrl || 'https://placekitten.com/100/100'} // Fallback image
+                      src={connection.profilePictureUrl || 'https://placekitten.com/100/100'}
                       alt={connection.name}
                       width={72}
                       height={72}
                       className="rounded-full"
                     />
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900">{connection.name}</h3>
-                      {connection.headline && (
-                        <p className="text-gray-600 mt-1">{connection.headline}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-900">{connection.name}</h3>
+                        <span className={`px-3 py-1 rounded-full text-sm ${
+                          connection.status === 'updated' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {connection.status === 'updated' ? 'Updated Role' : 'No Update'}
+                        </span>
+                      </div>
+                      
+                      {connection.status === 'updated' && (
+                        <>
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">Previous:</span>
+                              <p className="text-gray-700">{connection.oldHeadline || 'Not available'}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">Current:</span>
+                              <p className="text-gray-700">{connection.newHeadline || 'Not available'}</p>
+                            </div>
+                          </div>
+                          
+                          {connection.aiAnalysis && (
+                            <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+                              <p className="text-purple-700 text-sm">{connection.aiAnalysis}</p>
+                            </div>
+                          )}
+                        </>
                       )}
+                      
                       {connection.publicProfileUrl && (
                         <a 
                           href={connection.publicProfileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block"
+                          className="text-blue-600 hover:text-blue-800 text-sm mt-4 inline-block"
                         >
                           View LinkedIn Profile
                         </a>

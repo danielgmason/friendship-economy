@@ -17,25 +17,25 @@ export default function LandingPage() {
   }, [isLoaded, isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm fixed w-full z-10">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="flex h-20 justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Friendship Economy</h1>
-            <nav className="flex gap-8 items-center">
-              <a href="/use-cases" className="text-gray-600 hover:text-gray-900">Use Cases</a>
-              <a href="/about" className="text-gray-600 hover:text-gray-900">About</a>
+      <header className="bg-white/70 backdrop-blur-md fixed w-full border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between items-center">
+            <h1 className="text-xl font-semibold text-gray-900">Friendship Economy</h1>
+            <nav className="flex gap-6 items-center">
+              <a href="/use-cases" className="text-sm text-gray-600 hover:text-gray-900">Use Cases</a>
+              <a href="/about" className="text-sm text-gray-600 hover:text-gray-900">About</a>
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800">
-                    Get started now →
+                  <button className="px-4 py-2 bg-black text-sm text-white rounded-lg hover:bg-gray-800 transition-colors">
+                    Sign In
                   </button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <a href="/dashboard" className="px-6 py-2.5 bg-black text-white rounded-full hover:bg-gray-800">
-                  Go to Dashboard →
+                <a href="/dashboard" className="px-4 py-2 bg-black text-sm text-white rounded-lg hover:bg-gray-800 transition-colors">
+                  Dashboard
                 </a>
               </SignedIn>
             </nav>
@@ -44,29 +44,33 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="pt-32 pb-20 px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-[72px] font-bold leading-tight text-gray-900 mb-6">
-            Never miss an <br/>
-            opportunity.
+      <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="inline-block mb-6 px-4 py-1.5 bg-gray-100 rounded-full">
+            <span className="text-sm font-medium text-gray-900">Angel Investing, Simplified</span>
+          </div>
+          <h1 className="text-5xl sm:text-6xl font-bold leading-tight text-gray-900 mb-6 tracking-tight">
+            Turn Your Network Into A<br/>
+            <span className="bg-gradient-to-r from-indigo-600 to-violet-600 text-transparent bg-clip-text">
+              Deal Pipeline
+            </span>
           </h1>
           <p className="text-xl text-gray-600 mx-auto max-w-2xl mb-12">
-            Build the digital version of your professional network to scale
-            your investment opportunities and availability, infinitely.
+            Spot investment opportunities by tracking when friends start new ventures or join promising startups. Never miss another angel investment opportunity.
           </p>
           <div className="flex gap-4 justify-center">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800">
-                  Try now
+                <button className="px-8 py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                  Get Started
                 </button>
               </SignInButton>
-              <button className="px-8 py-4 text-gray-900 hover:text-gray-600">
-                Browse network →
-              </button>
+              <a href="/about" className="px-8 py-4 text-gray-600 hover:text-gray-900 transition-colors">
+                Learn more →
+              </a>
             </SignedOut>
             <SignedIn>
-              <a href="/dashboard" className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800">
+              <a href="/dashboard" className="px-8 py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
                 Go to Dashboard
               </a>
             </SignedIn>
