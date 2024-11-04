@@ -1,7 +1,6 @@
 'use client';
 
 import { BellIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,10 +15,13 @@ interface AnonConnection {
   id: string;
   name: string;
   headline?: string;
+  oldHeadline?: string;
+  oldHeadlineUpdatedAt?: string;
+  status: 'updated' | 'no_change';
   publicProfileUrl?: string;
   publicIdentifier?: string;
   profilePictureUrl?: string;
-  createdAt: string;
+  connectionCreatedAt: string;
 }
 
 interface ConnectionsResponse {
@@ -160,7 +162,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Connections */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm overflow-x-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Recent Network Changes</h2>
           
           {error && (
@@ -176,37 +178,53 @@ export default function DashboardPage() {
               No connections found. Click &quot;Update Records&quot; to fetch your connections.
             </div>
           ) : (
-            <div className="space-y-8">
-              {connections.map((connection) => (
-                <div key={connection.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
-                  <div className="flex items-start gap-6">
-                    <Image
-                      src={connection.profilePictureUrl || 'https://placekitten.com/100/100'} // Fallback image
-                      alt={connection.name}
-                      width={72}
-                      height={72}
-                      className="rounded-full"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900">{connection.name}</h3>
-                      {connection.headline && (
-                        <p className="text-gray-600 mt-1">{connection.headline}</p>
-                      )}
-                      {connection.publicProfileUrl && (
-                        <a 
-                          href={connection.publicProfileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block"
-                        >
-                          View LinkedIn Profile
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Person</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Current Role</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Previous Role</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Updated At</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Profile</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {connections.map((connection) => {
+                  const hasUpdate = connection.oldHeadline && connection.headline && connection.headline !== connection.oldHeadline;
+                  return (
+                    <tr key={connection.id} className={`hover:bg-gray-50 ${hasUpdate ? 'bg-blue-50/50' : ''}`}>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={connection.profilePictureUrl || 'https://placekitten.com/100/100'}
+                            alt={connection.name}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <span className="font-medium text-gray-900">{connection.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.headline || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadline || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadlineUpdatedAt || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.status}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {connection.publicProfileUrl && (
+                          <a 
+                            href={connection.publicProfileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm mt-4 inline-block"
+                          >
+                            View LinkedIn Profile
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
       </main>
