@@ -1,7 +1,6 @@
 'use client';
 
 import { BellIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import { useAuth, UserButton } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -192,10 +191,19 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {connections.map((connection) => {
-                  const hasUpdate = connection.status === 'updated';
+                  const hasUpdate = connection.oldHeadline && connection.headline && connection.headline !== connection.oldHeadline;
                   return (
-                    <tr key={connection.id} className="border-b border-gray-200">
-                      <td className="px-4 py-3 whitespace-nowrap">{connection.name}</td>
+                    <tr key={connection.id} className={`hover:bg-gray-50 ${hasUpdate ? 'bg-blue-50/50' : ''}`}>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={connection.profilePictureUrl || 'https://placekitten.com/100/100'}
+                            alt={connection.name}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <span className="font-medium text-gray-900">{connection.name}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">{connection.headline || 'Not available'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadline || 'Not available'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadlineUpdatedAt || 'Not available'}</td>
