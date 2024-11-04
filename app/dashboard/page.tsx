@@ -17,13 +17,12 @@ interface AnonConnection {
   name: string;
   headline?: string;
   oldHeadline?: string;
-  newHeadline?: string;
+  oldHeadlineUpdatedAt?: string;
   status: 'updated' | 'no_change';
-  aiAnalysis?: string;
   publicProfileUrl?: string;
   publicIdentifier?: string;
   profilePictureUrl?: string;
-  createdAt: string;
+  connectionCreatedAt: string;
 }
 
 interface ConnectionsResponse {
@@ -164,7 +163,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Connections */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm overflow-x-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Recent Network Changes</h2>
           
           {error && (
@@ -180,65 +179,44 @@ export default function DashboardPage() {
               No connections found. Click &quot;Update Records&quot; to fetch your connections.
             </div>
           ) : (
-            <div className="space-y-8">
-              {connections.map((connection) => (
-                <div key={connection.id} className="border border-gray-100 rounded-xl p-6 hover:border-gray-200 transition-colors">
-                  <div className="flex items-start gap-6">
-                    <Image
-                      src={connection.profilePictureUrl || 'https://placekitten.com/100/100'}
-                      alt={connection.name}
-                      width={72}
-                      height={72}
-                      className="rounded-full"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-900">{connection.name}</h3>
-                        <span className={`px-3 py-1 rounded-full text-sm ${
-                          connection.status === 'updated' 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {connection.status === 'updated' ? 'Updated Role' : 'No Update'}
-                        </span>
-                      </div>
-                      
-                      {connection.status === 'updated' && (
-                        <>
-                          <div className="mt-3 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500">Previous:</span>
-                              <p className="text-gray-700">{connection.oldHeadline || 'Not available'}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500">Current:</span>
-                              <p className="text-gray-700">{connection.newHeadline || 'Not available'}</p>
-                            </div>
-                          </div>
-                          
-                          {connection.aiAnalysis && (
-                            <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-                              <p className="text-purple-700 text-sm">{connection.aiAnalysis}</p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      
-                      {connection.publicProfileUrl && (
-                        <a 
-                          href={connection.publicProfileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm mt-4 inline-block"
-                        >
-                          View LinkedIn Profile
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Person</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Current Role</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Previous Role</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Updated At</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Profile</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {connections.map((connection) => {
+                  const hasUpdate = connection.status === 'updated';
+                  return (
+                    <tr key={connection.id} className="border-b border-gray-200">
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.headline || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadline || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.oldHeadlineUpdatedAt || 'Not available'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{connection.status}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {connection.publicProfileUrl && (
+                          <a 
+                            href={connection.publicProfileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm mt-4 inline-block"
+                          >
+                            View LinkedIn Profile
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
       </main>
